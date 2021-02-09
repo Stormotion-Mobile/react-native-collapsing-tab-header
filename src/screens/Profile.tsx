@@ -17,7 +17,11 @@ const Profile: FC = () => {
   const [firstListScrollValue, handleFirstListScroll] = useScrollValue(0);
   const [secondListScrollValue, handleSecondListScroll] = useScrollValue(0);
 
-  const translateY = Animated.multiply(-1, firstListScrollValue);
+  const translateY = Animated.multiply(-1, firstListScrollValue).interpolate({
+    inputRange: [-HEADER_HEIGHT, 0],
+    outputRange: [-HEADER_HEIGHT, 0],
+    extrapolateLeft: "clamp",
+  });
 
   const contentContainerStyle: StyleProp<ViewStyle> = {
     paddingTop: HEADER_HEIGHT + TAB_BAR,

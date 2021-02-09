@@ -1,6 +1,7 @@
 import React, { FC, memo, useCallback } from "react";
 import {
   FlatList,
+  FlatListProps,
   ListRenderItem,
   SafeAreaView,
   StyleSheet,
@@ -31,7 +32,9 @@ const data: Actor[] = [
   },
 ];
 
-const Actors: FC = () => {
+const Actors: FC<Omit<FlatListProps<Actor>, "renderItem" | "data">> = (
+  props
+) => {
   const keyExtractor = useCallback((_, index) => index.toString(), []);
 
   const renderItem = useCallback<ListRenderItem<Actor>>(
@@ -45,6 +48,7 @@ const Actors: FC = () => {
       data={data}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
+      {...props}
     />
   );
 };

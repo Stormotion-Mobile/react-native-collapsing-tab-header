@@ -5,6 +5,7 @@ import {
 } from "@react-navigation/material-top-tabs";
 import React, { FC } from "react";
 import { Animated, StyleProp, View, ViewStyle } from "react-native";
+import useScrollValue from "../hooks/useScrollValue";
 import Actors from "./Actors";
 
 export const HEADER_HEIGHT = 150;
@@ -13,16 +14,27 @@ export const TAB_BAR = 48;
 const Tab = createMaterialTopTabNavigator();
 
 const Profile: FC = () => {
+  const [firstListScrollValue, handleFirstListScroll] = useScrollValue(0);
+  const [secondListScrollValue, handleSecondListScroll] = useScrollValue(0);
+
+  const translateY = Animated.multiply(-1, firstListScrollValue);
+
   const contentContainerStyle: StyleProp<ViewStyle> = {
     paddingTop: HEADER_HEIGHT + TAB_BAR,
   };
 
   const renderFirstList = () => (
-    <Actors contentContainerStyle={contentContainerStyle} />
+    <Actors
+      contentContainerStyle={contentContainerStyle}
+      onScroll={handleFirstListScroll}
+    />
   );
 
   const renderSecondList = () => (
-    <Actors contentContainerStyle={contentContainerStyle} />
+    <Actors
+      contentContainerStyle={contentContainerStyle}
+      onScroll={handleSecondListScroll}
+    />
   );
 
   const renderTabBar = (props: MaterialTopTabBarProps) => (
@@ -33,6 +45,7 @@ const Profile: FC = () => {
         left: 0,
         right: 0,
         zIndex: 1,
+        transform: [{ translateY }],
       }}
     >
       <MaterialTopTabBar {...props} />
@@ -53,6 +66,7 @@ const Profile: FC = () => {
           backgroundColor: "blue",
           position: "absolute",
           height: HEADER_HEIGHT,
+          transform: [{ translateY }],
         }}
       />
     </View>

@@ -1,5 +1,6 @@
 import React, { FC, memo, useCallback } from "react";
 import {
+  Animated,
   FlatList,
   FlatListProps,
   ListRenderItem,
@@ -10,6 +11,26 @@ import ActorItem from "../components/ActorItem";
 import { Actor } from "../types/Actor";
 
 const data: Actor[] = [
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Morgan Freeman",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Benedict Cumberbatch",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Jack Nicholson",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Christian Bale",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Keanu Reeves",
+  },
   {
     photo: "https://reactnative.dev/img/tiny_logo.png",
     name: "Morgan Freeman",
@@ -43,7 +64,7 @@ const Actors: FC<Omit<FlatListProps<Actor>, "renderItem" | "data">> = (
   );
 
   return (
-    <FlatList
+    <Animated.FlatList
       style={styles.container}
       data={data}
       renderItem={renderItem}

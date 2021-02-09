@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback } from "react";
+import React, { FC, forwardRef, memo, useCallback } from "react";
 import {
   Animated,
   FlatList,
@@ -53,9 +53,9 @@ const data: Actor[] = [
   },
 ];
 
-const Actors: FC<Omit<FlatListProps<Actor>, "renderItem" | "data">> = (
-  props
-) => {
+type Props = Omit<FlatListProps<Actor>, "renderItem" | "data">;
+
+const Actors = forwardRef<FlatList, Props>((props, ref) => {
   const keyExtractor = useCallback((_, index) => index.toString(), []);
 
   const renderItem = useCallback<ListRenderItem<Actor>>(
@@ -65,6 +65,7 @@ const Actors: FC<Omit<FlatListProps<Actor>, "renderItem" | "data">> = (
 
   return (
     <Animated.FlatList
+      ref={ref}
       style={styles.container}
       data={data}
       renderItem={renderItem}
@@ -72,7 +73,7 @@ const Actors: FC<Omit<FlatListProps<Actor>, "renderItem" | "data">> = (
       {...props}
     />
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

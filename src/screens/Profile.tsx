@@ -3,10 +3,14 @@ import {
   MaterialTopTabBar,
   MaterialTopTabBarProps,
 } from "@react-navigation/material-top-tabs";
-import React, { FC, useState } from "react";
+import React, { FC, useRef, useState } from "react";
+import { FlatList, FlatListProps } from "react-native";
 import { Animated, StyleProp, View, ViewStyle } from "react-native";
 import TabBar from "../components/TabBar";
+import useScrollSync from "../hooks/useScrollSync";
 import useScrollValue from "../hooks/useScrollValue";
+import { Actor } from "../types/Actor";
+import { ScrollPair } from "../types/ScrollPair";
 import Actors from "./Actors";
 
 export const HEADER_HEIGHT = 150;
@@ -15,10 +19,28 @@ export const TAB_BAR = 48;
 const Tab = createMaterialTopTabNavigator();
 
 const Profile: FC = () => {
+  const firstListRef = useRef<FlatList>(null);
+  const secondListRef = useRef<FlatList>(null);
+
   const [tabIndex, setTabIndex] = useState(0);
 
-  const [firstListScrollValue, handleFirstListScroll] = useScrollValue(0);
-  const [secondListScrollValue, handleSecondListScroll] = useScrollValue(0);
+  const [
+    firstListScrollValue,
+    firstListPosition,
+    handleFirstListScroll,
+  ] = useScrollValue(0);
+  const [
+    secondListScrollValue,
+    secondListPosition,
+    handleSecondListScroll,
+  ] = useScrollValue(0);
+
+  const scrollPairs: ScrollPair[] = [
+    { list: firstListRef, position: firstListPosition },
+    { list: secondListRef, position: secondListPosition },
+  ];
+
+  const { sync } = useScrollSync(scrollPairs);
 
   const currentScrollValue = Animated.add(
     Animated.multiply(firstListScrollValue, tabIndex === 0 ? 1 : 0),
@@ -35,17 +57,25 @@ const Profile: FC = () => {
     paddingTop: HEADER_HEIGHT + TAB_BAR,
   };
 
+  const sharedProps: Partial<FlatListProps<Actor>> = {
+    contentContainerStyle,
+    onMomentumScrollEnd: sync,
+    onScrollEndDrag: sync,
+  };
+
   const renderFirstList = () => (
     <Actors
-      contentContainerStyle={contentContainerStyle}
+      ref={firstListRef}
       onScroll={handleFirstListScroll}
+      {...sharedProps}
     />
   );
 
   const renderSecondList = () => (
     <Actors
-      contentContainerStyle={contentContainerStyle}
+      ref={secondListRef}
       onScroll={handleSecondListScroll}
+      {...sharedProps}
     />
   );
 

@@ -40,7 +40,7 @@ const Profile: FC = () => {
     { list: secondListRef, position: secondListPosition },
   ];
 
-  const { sync } = useScrollSync(scrollPairs);
+  const { sync } = useScrollSync(scrollPairs, HEADER_HEIGHT);
 
   const currentScrollValue = Animated.add(
     Animated.multiply(firstListScrollValue, tabIndex === 0 ? 1 : 0),

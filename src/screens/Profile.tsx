@@ -3,8 +3,9 @@ import {
   MaterialTopTabBar,
   MaterialTopTabBarProps,
 } from "@react-navigation/material-top-tabs";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Animated, StyleProp, View, ViewStyle } from "react-native";
+import TabBar from "../components/TabBar";
 import useScrollValue from "../hooks/useScrollValue";
 import Actors from "./Actors";
 
@@ -14,10 +15,17 @@ export const TAB_BAR = 48;
 const Tab = createMaterialTopTabNavigator();
 
 const Profile: FC = () => {
+  const [tabIndex, setTabIndex] = useState(0);
+
   const [firstListScrollValue, handleFirstListScroll] = useScrollValue(0);
   const [secondListScrollValue, handleSecondListScroll] = useScrollValue(0);
 
-  const translateY = Animated.multiply(-1, firstListScrollValue).interpolate({
+  const currentScrollValue = Animated.add(
+    Animated.multiply(firstListScrollValue, tabIndex === 0 ? 1 : 0),
+    Animated.multiply(secondListScrollValue, tabIndex == 1 ? 1 : 0)
+  );
+
+  const translateY = Animated.multiply(-1, currentScrollValue).interpolate({
     inputRange: [-HEADER_HEIGHT, 0],
     outputRange: [-HEADER_HEIGHT, 0],
     extrapolateLeft: "clamp",
@@ -52,7 +60,7 @@ const Profile: FC = () => {
         transform: [{ translateY }],
       }}
     >
-      <MaterialTopTabBar {...props} />
+      <TabBar onIndexChange={setTabIndex} {...props} />
     </Animated.View>
   );
 

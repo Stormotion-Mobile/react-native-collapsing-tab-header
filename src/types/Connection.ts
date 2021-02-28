@@ -1,4 +1,4 @@
-export type Actor = {
+export type Connection = {
   photo: string;
   name: string;
 };

@@ -1,14 +1,15 @@
 import { NavigationContainer } from "@react-navigation/native";
 import React, { FC } from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
-import Profile from "./src/screens/Profile";
+import { StyleSheet } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import Connection from "./src/screens/Profile";
 
 const App: FC = () => (
-  <SafeAreaView style={styles.container}>
+  <SafeAreaProvider>
     <NavigationContainer>
-      <Profile />
+      <Connection />
     </NavigationContainer>
-  </SafeAreaView>
+  </SafeAreaProvider>
 );
 
 const styles = StyleSheet.create({

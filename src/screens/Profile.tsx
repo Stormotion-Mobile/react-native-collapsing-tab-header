@@ -2,12 +2,12 @@ import {
   createMaterialTopTabNavigator,
   MaterialTopTabBarProps,
 } from "@react-navigation/material-top-tabs";
-import React, { FC, useRef, useState } from "react";
+import React, { FC, memo, useCallback, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   FlatListProps,
   StyleProp,
-  Text,
+  StyleSheet,
   View,
   ViewProps,
   ViewStyle,
@@ -18,24 +18,35 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
 } from "react-native-reanimated";
+import Header from "../components/Header";
 import TabBar from "../components/TabBar";
 import useScrollSync from "../hooks/useScrollSync";
-import { Actor } from "../types/Actor";
+import ConnectionList from "../components/ConnectionList";
+import { Connection } from "../types/Connection";
 import { ScrollPair } from "../types/ScrollPair";
-import Actors from "./Actors";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FRIENDS, SUGGESTIONS } from "../mocks/connections";
 
-export const TAB_BAR = 48;
+const TAB_BAR_HEIGHT = 48;
 
 const Tab = createMaterialTopTabNavigator();
 
 const Profile: FC = () => {
+  const { top, bottom } = useSafeAreaInsets();
+
   const firstListRef = useRef<FlatList>(null);
   const secondListRef = useRef<FlatList>(null);
 
-  const [headerHeight, setHeaderHeight] = useState(0);
   const [tabIndex, setTabIndex] = useState(0);
 
-  const rendered = headerHeight !== 0;
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const rendered = headerHeight > 0;
+
+  const handleHeaderLayout = useCallback<NonNullable<ViewProps["onLayout"]>>(
+    (event) => setHeaderHeight(event.nativeEvent.layout.height),
+    []
+  );
 
   const firstListScrollValue = useSharedValue(0);
 
@@ -49,10 +60,13 @@ const Profile: FC = () => {
     (event) => (secondListScrollValue.value = event.contentOffset.y)
   );
 
-  const scrollPairs: ScrollPair[] = [
-    { list: firstListRef, position: firstListScrollValue },
-    { list: secondListRef, position: secondListScrollValue },
-  ];
+  const scrollPairs = useMemo<ScrollPair[]>(
+    () => [
+      { list: firstListRef, position: firstListScrollValue },
+      { list: secondListRef, position: secondListScrollValue },
+    ],
+    [firstListRef, firstListScrollValue, secondListRef, secondListScrollValue]
+  );
 
   const { sync } = useScrollSync(scrollPairs, headerHeight);
 
@@ -74,85 +88,114 @@ const Profile: FC = () => {
     transform: [{ translateY: translateY.value }],
   }));
 
-  const contentContainerStyle: StyleProp<ViewStyle> = {
-    paddingTop: rendered ? headerHeight + TAB_BAR : 0,
-  };
-
-  const sharedProps: Partial<FlatListProps<Actor>> = {
-    contentContainerStyle,
-    onMomentumScrollEnd: sync,
-    onScrollEndDrag: sync,
-    scrollEventThrottle: 16,
-  };
-
-  const renderFirstList = () => (
-    <Actors
-      ref={firstListRef}
-      onScroll={firstListScrollHandler}
-      {...sharedProps}
-    />
+  const contentContainerStyle = useMemo<StyleProp<ViewStyle>>(
+    () => ({
+      paddingTop: rendered ? headerHeight + TAB_BAR_HEIGHT : 0,
+      paddingBottom: bottom,
+    }),
+    [rendered, headerHeight, bottom]
   );
 
-  const renderSecondList = () => (
-    <Actors
-      ref={secondListRef}
-      onScroll={secondListScrollHandler}
-      {...sharedProps}
-    />
+  const sharedProps = useMemo<Partial<FlatListProps<Connection>>>(
+    () => ({
+      contentContainerStyle,
+      onMomentumScrollEnd: sync,
+      onScrollEndDrag: sync,
+      scrollEventThrottle: 16,
+    }),
+    [contentContainerStyle, sync]
   );
 
-  const renderTabBar = (props: MaterialTopTabBarProps) => (
-    <Animated.View
-      style={[
-        rendered
-          ? {
-              position: "absolute",
-              top: headerHeight,
-              left: 0,
-              right: 0,
-              zIndex: 1,
-            }
-          : undefined,
-        tabBarAnimatedStyle,
-      ]}
-    >
-      <TabBar onIndexChange={setTabIndex} {...props} />
-    </Animated.View>
+  const renderFirstList = useCallback(
+    () => (
+      <ConnectionList
+        ref={firstListRef}
+        data={FRIENDS}
+        onScroll={firstListScrollHandler}
+        {...sharedProps}
+      />
+    ),
+    [firstListRef, firstListScrollHandler, sharedProps]
   );
 
-  const handleHeaderLayout: NonNullable<ViewProps["onLayout"]> = (event) =>
-    setHeaderHeight(event.nativeEvent.layout.height);
+  const renderSecondList = useCallback(
+    () => (
+      <ConnectionList
+        ref={secondListRef}
+        data={SUGGESTIONS}
+        onScroll={secondListScrollHandler}
+        {...sharedProps}
+      />
+    ),
+    [secondListScrollHandler, sharedProps]
+  );
+
+  const tabBarStyle = useMemo<StyleProp<ViewStyle>>(
+    () => [
+      rendered ? styles.tabBarContainer : undefined,
+      { top: rendered ? headerHeight : undefined },
+      tabBarAnimatedStyle,
+    ],
+    [rendered, headerHeight, tabBarAnimatedStyle]
+  );
+
+  const renderTabBar = useCallback<
+    (props: MaterialTopTabBarProps) => React.ReactElement
+  >(
+    (props) => (
+      <Animated.View style={tabBarStyle}>
+        <TabBar onIndexChange={setTabIndex} {...props} />
+      </Animated.View>
+    ),
+    [tabBarStyle, headerHeight, rendered]
+  );
+
+  const headerContainerStyle = useMemo<StyleProp<ViewStyle>>(
+    () => [
+      rendered ? styles.headerContainer : undefined,
+      { paddingTop: top },
+      headerAnimatedStyle,
+    ],
+
+    [rendered, headerHeight, headerAnimatedStyle]
+  );
 
   return (
-    <View style={{ flex: 1 }}>
-      <Animated.View
-        onLayout={handleHeaderLayout}
-        style={[
-          rendered
-            ? {
-                top: 0,
-                left: 0,
-                right: 0,
-                backgroundColor: "blue",
-                position: "absolute",
-                zIndex: 1,
-              }
-            : { backgroundColor: "blue" },
-          headerAnimatedStyle,
-        ]}
-      >
-        <Text style={{ fontSize: 32 }}>
-          HEY HELLO HEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY
-          HELLOHEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY
-          HELLOHEY HELLO
-        </Text>
+    <View style={styles.container}>
+      <Animated.View onLayout={handleHeaderLayout} style={headerContainerStyle}>
+        <Header
+          name="Emily Davis"
+          bio="Let's get started 🚀"
+          photo={"https://picsum.photos/id/1027/300/300"}
+        />
       </Animated.View>
       <Tab.Navigator tabBar={renderTabBar}>
-        <Tab.Screen name="Actors 1">{renderFirstList}</Tab.Screen>
-        <Tab.Screen name="Actors 2">{renderSecondList}</Tab.Screen>
+        <Tab.Screen name="Friends">{renderFirstList}</Tab.Screen>
+        <Tab.Screen name="Suggestions">{renderSecondList}</Tab.Screen>
       </Tab.Navigator>
     </View>
   );
 };
 
-export default Profile;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  tabBarContainer: {
+    top: 0,
+    left: 0,
+    right: 0,
+    position: "absolute",
+    zIndex: 1,
+  },
+  headerContainer: {
+    top: 0,
+    left: 0,
+    right: 0,
+    position: "absolute",
+    zIndex: 1,
+  },
+});
+
+export default memo(Profile);

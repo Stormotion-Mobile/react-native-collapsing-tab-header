@@ -1,13 +1,15 @@
 import React, { FC, memo, useMemo } from "react";
 import { Image, StyleSheet, Text, View, ViewProps } from "react-native";
-import { Actor } from "../types/Actor";
+import { Connection } from "../types/Connection";
+
+export const PHOTO_SIZE = 40;
 
 type Props = Pick<ViewProps, "style"> & {
-  actor: Actor;
+  connection: Connection;
 };
 
-const ActorItem: FC<Props> = ({ style, actor }) => {
-  const { photo, name } = actor;
+const ConnectionItem: FC<Props> = ({ style, connection }) => {
+  const { photo, name } = connection;
 
   const mergedStyle = useMemo(() => [styles.container, style], [style]);
 
@@ -21,7 +23,11 @@ const ActorItem: FC<Props> = ({ style, actor }) => {
 
 const styles = StyleSheet.create({
   container: { alignItems: "center", flexDirection: "row", padding: 16 },
-  image: { height: 40, width: 40, borderRadius: 20 },
+  image: {
+    height: PHOTO_SIZE,
+    width: PHOTO_SIZE,
+    borderRadius: PHOTO_SIZE / 2,
+  },
   name: {
     marginLeft: 8,
     fontSize: 15,
@@ -29,4 +35,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default memo(ActorItem);
+export default memo(ConnectionItem);

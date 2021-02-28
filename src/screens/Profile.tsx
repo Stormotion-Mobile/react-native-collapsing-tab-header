@@ -1,13 +1,25 @@
 import {
   createMaterialTopTabNavigator,
-
-  MaterialTopTabBarProps
+  MaterialTopTabBarProps,
 } from "@react-navigation/material-top-tabs";
 import React, { FC, useRef, useState } from "react";
-import { Animated, FlatList, FlatListProps, StyleProp, Text, View, ViewProps, ViewStyle } from "react-native";
+import {
+  FlatList,
+  FlatListProps,
+  StyleProp,
+  Text,
+  View,
+  ViewProps,
+  ViewStyle,
+} from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+} from "react-native-reanimated";
 import TabBar from "../components/TabBar";
 import useScrollSync from "../hooks/useScrollSync";
-import useScrollValue from "../hooks/useScrollValue";
 import { Actor } from "../types/Actor";
 import { ScrollPair } from "../types/ScrollPair";
 import Actors from "./Actors";
@@ -25,35 +37,42 @@ const Profile: FC = () => {
 
   const rendered = headerHeight !== 0;
 
-  const [
-    firstListScrollValue,
-    firstListPosition,
-    handleFirstListScroll,
-  ] = useScrollValue(0);
+  const firstListScrollValue = useSharedValue(0);
 
-  const [
-    secondListScrollValue,
-    secondListPosition,
-    handleSecondListScroll,
-  ] = useScrollValue(0);
+  const firstListScrollHandler = useAnimatedScrollHandler(
+    (event) => (firstListScrollValue.value = event.contentOffset.y)
+  );
+
+  const secondListScrollValue = useSharedValue(0);
+
+  const secondListScrollHandler = useAnimatedScrollHandler(
+    (event) => (secondListScrollValue.value = event.contentOffset.y)
+  );
 
   const scrollPairs: ScrollPair[] = [
-    { list: firstListRef, position: firstListPosition },
-    { list: secondListRef, position: secondListPosition },
+    { list: firstListRef, position: firstListScrollValue },
+    { list: secondListRef, position: secondListScrollValue },
   ];
 
   const { sync } = useScrollSync(scrollPairs, headerHeight);
 
-  const currentScrollValue = Animated.add(
-    Animated.multiply(firstListScrollValue, tabIndex === 0 ? 1 : 0),
-    Animated.multiply(secondListScrollValue, tabIndex == 1 ? 1 : 0)
+  const сurrentScrollValue = useDerivedValue(
+    () =>
+      tabIndex === 0 ? firstListScrollValue.value : secondListScrollValue.value,
+    [tabIndex]
   );
 
-  const translateY = Animated.multiply(-1, currentScrollValue).interpolate({
-    inputRange: [-headerHeight, 0],
-    outputRange: [-headerHeight, 0],
-    extrapolateLeft: "clamp",
-  });
+  const translateY = useDerivedValue(
+    () => -Math.min(сurrentScrollValue.value, headerHeight)
+  );
+
+  const tabBarAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   const contentContainerStyle: StyleProp<ViewStyle> = {
     paddingTop: rendered ? headerHeight + TAB_BAR : 0,
@@ -63,12 +82,13 @@ const Profile: FC = () => {
     contentContainerStyle,
     onMomentumScrollEnd: sync,
     onScrollEndDrag: sync,
+    scrollEventThrottle: 16,
   };
 
   const renderFirstList = () => (
     <Actors
       ref={firstListRef}
-      onScroll={handleFirstListScroll}
+      onScroll={firstListScrollHandler}
       {...sharedProps}
     />
   );
@@ -76,14 +96,14 @@ const Profile: FC = () => {
   const renderSecondList = () => (
     <Actors
       ref={secondListRef}
-      onScroll={handleSecondListScroll}
+      onScroll={secondListScrollHandler}
       {...sharedProps}
     />
   );
 
   const renderTabBar = (props: MaterialTopTabBarProps) => (
     <Animated.View
-      style={
+      style={[
         rendered
           ? {
               position: "absolute",
@@ -91,10 +111,10 @@ const Profile: FC = () => {
               left: 0,
               right: 0,
               zIndex: 1,
-              transform: [{ translateY }],
             }
-          : undefined
-      }
+          : undefined,
+        tabBarAnimatedStyle,
+      ]}
     >
       <TabBar onIndexChange={setTabIndex} {...props} />
     </Animated.View>
@@ -107,7 +127,7 @@ const Profile: FC = () => {
     <View style={{ flex: 1 }}>
       <Animated.View
         onLayout={handleHeaderLayout}
-        style={
+        style={[
           rendered
             ? {
                 top: 0,
@@ -115,11 +135,11 @@ const Profile: FC = () => {
                 right: 0,
                 backgroundColor: "blue",
                 position: "absolute",
-                transform: [{ translateY }],
                 zIndex: 1,
               }
-            : { backgroundColor: "blue" }
-        }
+            : { backgroundColor: "blue" },
+          headerAnimatedStyle,
+        ]}
       >
         <Text style={{ fontSize: 32 }}>
           HEY HELLO HEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY HELLOHEY

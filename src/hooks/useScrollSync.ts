@@ -1,5 +1,4 @@
 import { FlatListProps } from "react-native";
-import { HeaderConfig } from "../types/HeaderConfig";
 import { ScrollPair } from "../types/ScrollPair";
 
 const useScrollSync = (scrollPairs: ScrollPair[], headerHeight: number) => {
@@ -9,7 +8,7 @@ const useScrollSync = (scrollPairs: ScrollPair[], headerHeight: number) => {
     const { y } = event.nativeEvent.contentOffset;
 
     for (const { list, position } of scrollPairs) {
-      const scrollPosition = position.current ?? 0;
+      const scrollPosition = position.value ?? 0;
 
       if (scrollPosition > headerHeight && y > headerHeight) {
         continue;

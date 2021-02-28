@@ -1,16 +1,59 @@
 import React, { FC, forwardRef, memo, useCallback } from "react";
 import {
-  Animated,
   FlatList,
   FlatListProps,
   ListRenderItem,
-  SafeAreaView,
   StyleSheet,
 } from "react-native";
+import Animated from "react-native-reanimated";
 import ActorItem from "../components/ActorItem";
 import { Actor } from "../types/Actor";
 
+export const AnimatedFlatList: typeof FlatList = Animated.createAnimatedComponent(
+  FlatList
+);
+
 const data: Actor[] = [
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Morgan Freeman",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Benedict Cumberbatch",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Jack Nicholson",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Christian Bale",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Keanu Reeves",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Morgan Freeman",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Benedict Cumberbatch",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Jack Nicholson",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Christian Bale",
+  },
+  {
+    photo: "https://reactnative.dev/img/tiny_logo.png",
+    name: "Keanu Reeves",
+  },
   {
     photo: "https://reactnative.dev/img/tiny_logo.png",
     name: "Morgan Freeman",
@@ -64,7 +107,7 @@ const Actors = forwardRef<FlatList, Props>((props, ref) => {
   );
 
   return (
-    <Animated.FlatList
+    <AnimatedFlatList
       ref={ref}
       style={styles.container}
       data={data}

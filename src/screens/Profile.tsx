@@ -137,7 +137,7 @@ const Profile: FC = () => {
     [contentContainerStyle, sync]
   );
 
-  const renderFirstList = useCallback(
+  const renderFriends = useCallback(
     () => (
       <ConnectionList
         ref={firstListRef}
@@ -149,7 +149,7 @@ const Profile: FC = () => {
     [firstListRef, firstListScrollHandler, sharedProps]
   );
 
-  const renderSecondList = useCallback(
+  const renderSuggestions = useCallback(
     () => (
       <ConnectionList
         ref={secondListRef}
@@ -221,8 +221,8 @@ const Profile: FC = () => {
         <Text style={styles.overlayName}>Emily Davis</Text>
       </Animated.View>
       <Tab.Navigator tabBar={renderTabBar}>
-        <Tab.Screen name="Friends">{renderFirstList}</Tab.Screen>
-        <Tab.Screen name="Suggestions">{renderSecondList}</Tab.Screen>
+        <Tab.Screen name="Friends">{renderFriends}</Tab.Screen>
+        <Tab.Screen name="Suggestions">{renderSuggestions}</Tab.Screen>
       </Tab.Navigator>
     </View>
   );

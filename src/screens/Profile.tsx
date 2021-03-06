@@ -11,8 +11,10 @@ import {
   View,
   ViewProps,
   ViewStyle,
+  Text,
 } from "react-native";
 import Animated, {
+  interpolate,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useDerivedValue,
@@ -26,8 +28,13 @@ import { Connection } from "../types/Connection";
 import { ScrollPair } from "../types/ScrollPair";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FRIENDS, SUGGESTIONS } from "../mocks/connections";
+import { HeaderConfig } from "../types/HeaderConfig";
+import { Visibility } from "../types/Visibility";
 
 const TAB_BAR_HEIGHT = 48;
+const HEADER_HEIGHT = 48;
+
+const OVERLAY_VISIBILITY_OFFSET = 32;
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -40,6 +47,20 @@ const Profile: FC = () => {
   const [tabIndex, setTabIndex] = useState(0);
 
   const [headerHeight, setHeaderHeight] = useState(0);
+
+  const defaultHeaderHeight = top + HEADER_HEIGHT;
+
+  const headerConfig = useMemo<HeaderConfig>(
+    () => ({
+      heightCollapsed: defaultHeaderHeight,
+      heightExpanded: headerHeight,
+    }),
+    []
+  );
+
+  const { heightCollapsed, heightExpanded } = headerConfig;
+
+  const headerDiff = heightExpanded - heightCollapsed;
 
   const rendered = headerHeight > 0;
 
@@ -68,7 +89,7 @@ const Profile: FC = () => {
     [firstListRef, firstListScrollValue, secondListRef, secondListScrollValue]
   );
 
-  const { sync } = useScrollSync(scrollPairs, headerHeight);
+  const { sync } = useScrollSync(scrollPairs, headerConfig);
 
   const сurrentScrollValue = useDerivedValue(
     () =>
@@ -77,7 +98,7 @@ const Profile: FC = () => {
   );
 
   const translateY = useDerivedValue(
-    () => -Math.min(сurrentScrollValue.value, headerHeight)
+    () => -Math.min(сurrentScrollValue.value, headerDiff)
   );
 
   const tabBarAnimatedStyle = useAnimatedStyle(() => ({
@@ -86,6 +107,11 @@ const Profile: FC = () => {
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
+    opacity: interpolate(
+      translateY.value,
+      [-headerDiff, 0],
+      [Visibility.Hidden, Visibility.Visible]
+    ),
   }));
 
   const contentContainerStyle = useMemo<StyleProp<ViewStyle>>(
@@ -160,6 +186,23 @@ const Profile: FC = () => {
     [rendered, headerHeight, headerAnimatedStyle]
   );
 
+  const collapsedOverlayAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      translateY.value,
+      [-headerDiff, OVERLAY_VISIBILITY_OFFSET - headerDiff, 0],
+      [Visibility.Visible, Visibility.Hidden, Visibility.Hidden]
+    ),
+  }));
+
+  const collapsedOverlayStyle = useMemo<StyleProp<ViewStyle>>(
+    () => [
+      styles.collapsedOvarlay,
+      collapsedOverlayAnimatedStyle,
+      { height: heightCollapsed, paddingTop: top },
+    ],
+    [collapsedOverlayAnimatedStyle, heightCollapsed]
+  );
+
   return (
     <View style={styles.container}>
       <Animated.View onLayout={handleHeaderLayout} style={headerContainerStyle}>
@@ -168,6 +211,9 @@ const Profile: FC = () => {
           bio="Let's get started 🚀"
           photo={"https://picsum.photos/id/1027/300/300"}
         />
+      </Animated.View>
+      <Animated.View style={collapsedOverlayStyle}>
+        <Text style={styles.overlayName}>Emily Davis</Text>
       </Animated.View>
       <Tab.Navigator tabBar={renderTabBar}>
         <Tab.Screen name="Friends">{renderFirstList}</Tab.Screen>
@@ -188,6 +234,19 @@ const styles = StyleSheet.create({
     right: 0,
     position: "absolute",
     zIndex: 1,
+  },
+  overlayName: {
+    fontSize: 24,
+  },
+  collapsedOvarlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
   },
   headerContainer: {
     top: 0,

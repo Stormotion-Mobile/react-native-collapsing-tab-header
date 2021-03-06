@@ -12,6 +12,7 @@ import {
   ViewProps,
   ViewStyle,
   Text,
+  useWindowDimensions,
 } from "react-native";
 import Animated, {
   interpolate,
@@ -40,6 +41,8 @@ const Tab = createMaterialTopTabNavigator();
 
 const Profile: FC = () => {
   const { top, bottom } = useSafeAreaInsets();
+
+  const { height: screenHeight } = useWindowDimensions();
 
   const firstListRef = useRef<FlatList>(null);
   const secondListRef = useRef<FlatList>(null);
@@ -118,6 +121,7 @@ const Profile: FC = () => {
     () => ({
       paddingTop: rendered ? headerHeight + TAB_BAR_HEIGHT : 0,
       paddingBottom: bottom,
+      minHeight: screenHeight + headerDiff,
     }),
     [rendered, headerHeight, bottom]
   );

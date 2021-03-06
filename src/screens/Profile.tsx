@@ -128,6 +128,7 @@ const Profile: FC = () => {
       onMomentumScrollEnd: sync,
       onScrollEndDrag: sync,
       scrollEventThrottle: 16,
+      scrollIndicatorInsets: { top: heightExpanded },
     }),
     [contentContainerStyle, sync]
   );

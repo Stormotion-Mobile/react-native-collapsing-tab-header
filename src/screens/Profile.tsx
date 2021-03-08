@@ -44,8 +44,8 @@ const Profile: FC = () => {
 
   const { height: screenHeight } = useWindowDimensions();
 
-  const firstListRef = useRef<FlatList>(null);
-  const secondListRef = useRef<FlatList>(null);
+  const friendsRef = useRef<FlatList>(null);
+  const suggestionsRef = useRef<FlatList>(null);
 
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -72,31 +72,31 @@ const Profile: FC = () => {
     []
   );
 
-  const firstListScrollValue = useSharedValue(0);
+  const friendsScrollValue = useSharedValue(0);
 
-  const firstListScrollHandler = useAnimatedScrollHandler(
-    (event) => (firstListScrollValue.value = event.contentOffset.y)
+  const friendsScrollHandler = useAnimatedScrollHandler(
+    (event) => (friendsScrollValue.value = event.contentOffset.y)
   );
 
-  const secondListScrollValue = useSharedValue(0);
+  const suggestionsScrollValue = useSharedValue(0);
 
-  const secondListScrollHandler = useAnimatedScrollHandler(
-    (event) => (secondListScrollValue.value = event.contentOffset.y)
+  const suggestionsScrollHandler = useAnimatedScrollHandler(
+    (event) => (suggestionsScrollValue.value = event.contentOffset.y)
   );
 
   const scrollPairs = useMemo<ScrollPair[]>(
     () => [
-      { list: firstListRef, position: firstListScrollValue },
-      { list: secondListRef, position: secondListScrollValue },
+      { list: friendsRef, position: friendsScrollValue },
+      { list: suggestionsRef, position: suggestionsScrollValue },
     ],
-    [firstListRef, firstListScrollValue, secondListRef, secondListScrollValue]
+    [friendsRef, friendsScrollValue, suggestionsRef, suggestionsScrollValue]
   );
 
   const { sync } = useScrollSync(scrollPairs, headerConfig);
 
   const сurrentScrollValue = useDerivedValue(
     () =>
-      tabIndex === 0 ? firstListScrollValue.value : secondListScrollValue.value,
+      tabIndex === 0 ? friendsScrollValue.value : suggestionsScrollValue.value,
     [tabIndex]
   );
 
@@ -140,25 +140,25 @@ const Profile: FC = () => {
   const renderFriends = useCallback(
     () => (
       <ConnectionList
-        ref={firstListRef}
+        ref={friendsRef}
         data={FRIENDS}
-        onScroll={firstListScrollHandler}
+        onScroll={friendsScrollHandler}
         {...sharedProps}
       />
     ),
-    [firstListRef, firstListScrollHandler, sharedProps]
+    [friendsRef, friendsScrollHandler, sharedProps]
   );
 
   const renderSuggestions = useCallback(
     () => (
       <ConnectionList
-        ref={secondListRef}
+        ref={suggestionsRef}
         data={SUGGESTIONS}
-        onScroll={secondListScrollHandler}
+        onScroll={suggestionsScrollHandler}
         {...sharedProps}
       />
     ),
-    [secondListScrollHandler, sharedProps]
+    [suggestionsScrollHandler, sharedProps]
   );
 
   const tabBarStyle = useMemo<StyleProp<ViewStyle>>(

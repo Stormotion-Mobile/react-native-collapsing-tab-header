@@ -58,7 +58,7 @@ const Profile: FC = () => {
       heightCollapsed: defaultHeaderHeight,
       heightExpanded: headerHeight,
     }),
-    []
+    [defaultHeaderHeight, headerHeight]
   );
 
   const { heightCollapsed, heightExpanded } = headerConfig;
@@ -97,7 +97,7 @@ const Profile: FC = () => {
   const сurrentScrollValue = useDerivedValue(
     () =>
       tabIndex === 0 ? friendsScrollValue.value : suggestionsScrollValue.value,
-    [tabIndex]
+    [tabIndex, friendsScrollValue, suggestionsScrollValue]
   );
 
   const translateY = useDerivedValue(
@@ -123,7 +123,7 @@ const Profile: FC = () => {
       paddingBottom: bottom,
       minHeight: screenHeight + headerDiff,
     }),
-    [rendered, headerHeight, bottom]
+    [rendered, headerHeight, bottom, screenHeight, headerDiff]
   );
 
   const sharedProps = useMemo<Partial<FlatListProps<Connection>>>(
@@ -134,7 +134,7 @@ const Profile: FC = () => {
       scrollEventThrottle: 16,
       scrollIndicatorInsets: { top: heightExpanded },
     }),
-    [contentContainerStyle, sync]
+    [contentContainerStyle, sync, heightExpanded]
   );
 
   const renderFriends = useCallback(
@@ -158,7 +158,7 @@ const Profile: FC = () => {
         {...sharedProps}
       />
     ),
-    [suggestionsScrollHandler, sharedProps]
+    [suggestionsRef, suggestionsScrollHandler, sharedProps]
   );
 
   const tabBarStyle = useMemo<StyleProp<ViewStyle>>(
@@ -178,7 +178,7 @@ const Profile: FC = () => {
         <TabBar onIndexChange={setTabIndex} {...props} />
       </Animated.View>
     ),
-    [tabBarStyle, headerHeight, rendered]
+    [tabBarStyle]
   );
 
   const headerContainerStyle = useMemo<StyleProp<ViewStyle>>(
@@ -188,7 +188,7 @@ const Profile: FC = () => {
       headerAnimatedStyle,
     ],
 
-    [rendered, headerHeight, headerAnimatedStyle]
+    [rendered, top, headerAnimatedStyle]
   );
 
   const collapsedOverlayAnimatedStyle = useAnimatedStyle(() => ({
@@ -205,7 +205,7 @@ const Profile: FC = () => {
       collapsedOverlayAnimatedStyle,
       { height: heightCollapsed, paddingTop: top },
     ],
-    [collapsedOverlayAnimatedStyle, heightCollapsed]
+    [collapsedOverlayAnimatedStyle, heightCollapsed, top]
   );
 
   return (

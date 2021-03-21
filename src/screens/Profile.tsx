@@ -31,6 +31,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FRIENDS, SUGGESTIONS } from "../mocks/connections";
 import { HeaderConfig } from "../types/HeaderConfig";
 import { Visibility } from "../types/Visibility";
+import HeaderOverlay from "../components/HeaderOverlay";
 
 const TAB_BAR_HEIGHT = 48;
 const HEADER_HEIGHT = 48;
@@ -218,7 +219,7 @@ const Profile: FC = () => {
         />
       </Animated.View>
       <Animated.View style={collapsedOverlayStyle}>
-        <Text style={styles.overlayName}>Emily Davis</Text>
+        <HeaderOverlay name="Emily Davis" />
       </Animated.View>
       <Tab.Navigator tabBar={renderTabBar}>
         <Tab.Screen name="Friends">{renderFriends}</Tab.Screen>
@@ -249,7 +250,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "white",
-    alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
   },
